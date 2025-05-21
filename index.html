@@ -5,46 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ordenar Frases</title>
   <style>
-    .container {
+ html, body {
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+    }
+     .container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 2px;
-      font-family: Arial, sans-serif;
+      padding: 10px;
     }
-    /* Depósito: Área de posicionamiento libre ampliada (600px de alto) */
     .deposito {
       position: relative;
-      width: 100%;
-      height: 300px; /* Aumentado 50% */
+      width: 1170px;
+      height: 360px;
       padding: 10px;
       border: 2px dashed #999;
-      width: 1170px; /* Ajusta según necesites */
-    height: 360px; /* Ajusta según necesites */
       background-color: #fff;
       margin-bottom: 50px;
-      overflow: visible;
+      overflow: hidden;
     }
-    /* Caja de frase: estilo inicial con tamaño de letra reducido */
     .phrase {
       position: absolute;
-      padding: 1px;
-      background-color: lightblue;
+      padding: 3px;
+      background-color: #fff;
       border: 1px solid #000;
       cursor: grab;
       user-select: none;
       width: 120px;
       min-height: 40px;
       box-sizing: border-box;
-      font-size: 9px; /* Tamaño de letra reducido */
-      background-color: #fff;
-    border-radius: 10px;
-    padding: 3px;
-    margin: 1px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      font-size: 9px;
+      border-radius: 10px;
+      margin: 1px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       line-height: 1.5;
     }
-    /* Grilla de ordenación */
+    .phrase.dragging {
+      z-index: 9999 !important;
+    }
     .grid {
       display: flex;
       gap: 1px;
@@ -75,22 +81,14 @@
 <body>
   <div class="container">
     <h2>(1) Leer cada frase, luego de manera opcional moverlas dentro del recuadro punteado. (2) Posteriormente llevarlas a la grilla, en función del grado de acuerdo (+) y desacuerdo (-). [Para mejorar la visualización presiona "F11", la misma tecla devuelve la visión anterior]</h2>
-    <div class="deposito" id="deposito">
-      <!-- Las 32 frases se crearán dinámicamente -->
-    </div>
-
+    <div class="deposito" id="deposito"></div>
     <h2>Grilla de Ordenación</h2>
-    <div class="grid" id="grid">
-      <!-- Se genera la grilla a partir de la estructura -->
-    </div>
-    
-    <button onclick="generarEnlace()">Generar Enlace: (Sólo si están todas las frases clasificadas en la grilla)</button>
+    <div class="grid" id="grid"></div>
+    <button onclick="generarEnlace()">Generar Enlace</button>
     <input type="text" id="link" readonly style="width: 80%; margin-top: 5px;">
     <button id="copiarBtn" onclick="copiarEnlace()" style="display: none; margin-top: 5px;">Copiar enlace</button>
   </div>
-
   <script>
-    // Array con las 32 frases
     const frases = ["La confianza entre los productores y sus asesores o extensionistas es clave para obtener buenos resultados.",
 "Para innovar, es necesario debatir y pensar junto con personas que tengan distintas ideas y puntos de vista sobre el asunto.",
 "Los productores no son realmente innovadores, el sector agropecuario es conservador.",
@@ -122,40 +120,27 @@
 "Los investigadores tienen una mirada poco realista sobre cómo se produce.",
 "Hay que usar herbicidas porque intentar ahorrar en los controles de malezas puede salir muy caro.",
 "Tenemos que adoptar modelos que sean altamente productivos pero que a la vez sean amigables con la naturaleza.",
-"Hay que imitar a la naturaleza, no se puede pretender máximos rindes en el corto plazo y cuidar el suelo al mismo tiempo."
-    ];
-
-    // Estructura de la grilla: números y cantidad de slots (total 32)
+"Hay que imitar a la naturaleza, no se puede pretender máximos rindes en el corto plazo y cuidar el suelo al mismo tiempo."]; // mismo array de frases
     const estructura = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
     const espacios = [2, 3, 4, 4, 6, 4, 4, 3, 2];
-
     const deposito = document.getElementById("deposito");
     const grid = document.getElementById("grid");
 
-    // Función que crea un elemento de frase con posición inicial (en depósito)
-    function crearFraseElement(text, left, top) {
-      const div = document.createElement("div");
-      div.classList.add("phrase");
-      div.textContent = text;
-      div.style.left = left + "px";
-      div.style.top = top + "px";
-      // Asociar el evento para iniciar el arrastre (desde depósito o grilla)
-      div.addEventListener("mousedown", iniciarArrastre);
-      return div;
-    }
-
-    // Distribuir las 32 frases en el depósito en un "mini-grid" inicial
-    const gapX = 10, gapY = 40, phraseWidth = 130, phraseHeight = 50;
+        const gapX = 10, gapY = 40, phraseWidth = 130, phraseHeight = 50;
     frases.forEach((frase, index) => {
       const col = index % 8;
       const row = Math.floor(index / 8);
       const left = 10 + col * (phraseWidth + gapX);
       const top = 10 + row * (phraseHeight + gapY);
-      const fraseElem = crearFraseElement(frase, left, top);
-      deposito.appendChild(fraseElem);
+      const div = document.createElement("div");
+      div.classList.add("phrase");
+      div.textContent = frase;
+      div.style.left = left + "px";
+      div.style.top = top + "px";
+      div.addEventListener("mousedown", iniciarArrastre);
+      deposito.appendChild(div);
     });
 
-    // Generar la grilla de ordenación según la estructura
     estructura.forEach((nombre, index) => {
       const column = document.createElement("div");
       column.classList.add("column");
@@ -170,43 +155,49 @@
       grid.appendChild(column);
     });
 
-    // Variables para controlar el arrastre
-    let offsetX, offsetY, currentDragged = null, originalParent, originalPos = { left: 0, top: 0 };
-    // Umbral de distancia para aplicar el efecto imán (en píxeles)
+    let offsetX, offsetY, currentDragged = null;
     const snapThreshold = 100;
 
     function iniciarArrastre(event) {
       currentDragged = event.currentTarget;
-      originalParent = currentDragged.parentElement;
-      originalPos.left = currentDragged.getBoundingClientRect().left;
-      originalPos.top = currentDragged.getBoundingClientRect().top;
-      // Usamos event.offsetX/Y para obtener el punto exacto de clic
-      offsetX = event.offsetX;
-      offsetY = event.offsetY;
-      // Reparentear a document.body para mover libremente por toda la ventana
+
+      const depRect = deposito.getBoundingClientRect();
+      const phraseRect = currentDragged.getBoundingClientRect();
+
+      offsetX = event.clientX - phraseRect.left;
+      offsetY = event.clientY - phraseRect.top;
+
+      const relativeLeft = phraseRect.left - depRect.left;
+      const relativeTop = phraseRect.top - depRect.top;
+
       currentDragged.style.position = "absolute";
-      currentDragged.style.left = originalPos.left + "px";
-      currentDragged.style.top = originalPos.top + "px";
-      document.body.appendChild(currentDragged);
-      currentDragged.style.zIndex = 1000;
+      currentDragged.style.left = relativeLeft + "px";
+      currentDragged.style.top = relativeTop + "px";
+
+      if (currentDragged.parentElement !== deposito) {
+        deposito.appendChild(currentDragged);
+      }
+
+      currentDragged.classList.add("dragging");
       document.addEventListener("mousemove", moverElemento);
       document.addEventListener("mouseup", finalizarArrastre);
     }
 
     function moverElemento(event) {
       if (!currentDragged) return;
-      const nuevaIzquierda = event.pageX - offsetX;
-      const nuevaArriba = event.pageY - offsetY;
-      currentDragged.style.left = nuevaIzquierda + "px";
-      currentDragged.style.top = nuevaArriba + "px";
+      const depRect = deposito.getBoundingClientRect();
+      const x = event.clientX - depRect.left - offsetX;
+      const y = event.clientY - depRect.top - offsetY;
+      currentDragged.style.left = Math.max(0, x) + "px";
+      currentDragged.style.top = Math.max(0, y) + "px";
     }
 
     function finalizarArrastre(event) {
       if (!currentDragged) return;
       document.removeEventListener("mousemove", moverElemento);
       document.removeEventListener("mouseup", finalizarArrastre);
-      currentDragged.style.zIndex = "";
-      
+      currentDragged.classList.remove("dragging");
+
       const fraseRect = currentDragged.getBoundingClientRect();
       const fraseCenter = {
         x: fraseRect.left + fraseRect.width / 2,
@@ -217,7 +208,6 @@
       let snapSlot = null;
       let minDistance = Infinity;
 
-      // Buscar el slot vacío más cercano al centro de la frase
       slots.forEach(slot => {
         if (slot.childNodes.length === 0) {
           const slotRect = slot.getBoundingClientRect();
@@ -235,89 +225,27 @@
         }
       });
 
-      // Si la distancia mínima es menor al umbral, se produce el "snap"
       if (snapSlot && minDistance <= snapThreshold) {
         currentDragged.style.position = "static";
         currentDragged.style.left = "";
         currentDragged.style.top = "";
         snapSlot.appendChild(currentDragged);
       } else {
-        // Si no se acerca lo suficiente a un slot, reinsertarla en el depósito
         const depRect = deposito.getBoundingClientRect();
-        const finalLeft = event.pageX - offsetX - depRect.left;
-        const finalTop = event.pageY - offsetY - depRect.top;
+        const maxLeft = deposito.clientWidth - currentDragged.offsetWidth;
+        const maxTop = deposito.clientHeight - currentDragged.offsetHeight;
+        const finalLeft = event.clientX - depRect.left - offsetX;
+        const finalTop = event.clientY - depRect.top - offsetY;
         currentDragged.style.position = "absolute";
-        currentDragged.style.left = finalLeft + "px";
-        currentDragged.style.top = finalTop + "px";
-        deposito.appendChild(currentDragged);
+        currentDragged.style.left = Math.max(0, Math.min(finalLeft, maxLeft)) + "px";
+        currentDragged.style.top = Math.max(0, Math.min(finalTop, maxTop)) + "px";
+
+        if (currentDragged.parentElement !== deposito) {
+          deposito.appendChild(currentDragged);
+        }
       }
       currentDragged = null;
     }
-
-  function generarEnlace() {
-  const slots = document.querySelectorAll(".slot");
-  const posiciones = [];
-  let frasesCompletas = true;
-
-  slots.forEach(slot => {
-    if (slot.firstChild) {
-      posiciones.push(slot.firstChild.textContent);
-    } else {
-      frasesCompletas = false;
-    }
-  });
-
-  if (!frasesCompletas) {
-    alert("Por favor, clasificá las 32 frases en la grilla antes de generar el enlace.");
-    return;
-  }
-
-  const url = new URL(window.location.href);
-  url.searchParams.set("orden", encodeURIComponent(JSON.stringify(posiciones)));
-  document.getElementById("link").value = url.href;
-
-  // Mostrar botón de copiar
-  document.getElementById("copiarBtn").style.display = "inline-block";
-}
-function copiarEnlace() {
-  const input = document.getElementById("link");
-  input.select();
-  input.setSelectionRange(0, 99999); // Para dispositivos móviles
-  document.execCommand("copy");
-
-  // Cambiar texto del botón como confirmación
-  const btn = document.getElementById("copiarBtn");
-  const originalText = btn.textContent;
-  btn.textContent = "¡Copiado!";
-  setTimeout(() => {
-    btn.textContent = originalText;
-  }, 1500);
-}
-    // Al cargar, si hay parámetro "orden", reubicar las frases en la grilla
-    window.onload = function() {
-      const params = new URLSearchParams(window.location.search);
-      if (params.has("orden")) {
-        const posiciones = JSON.parse(decodeURIComponent(params.get("orden")));
-        const slots = document.querySelectorAll(".slot");
-        posiciones.forEach((texto, index) => {
-          if (texto && slots[index]) {
-            const existente = Array.from(deposito.children).find(el => el.textContent === texto);
-            if (existente) {
-              existente.style.position = "static";
-              existente.style.left = "";
-              existente.style.top = "";
-              slots[index].appendChild(existente);
-            } else {
-              let phraseDiv = document.createElement("div");
-              phraseDiv.className = "phrase";
-              phraseDiv.textContent = texto;
-              phraseDiv.style.position = "static";
-              slots[index].appendChild(phraseDiv);
-            }
-          }
-        });
-      }
-    }; 
   </script>
 </body>
 </html>
