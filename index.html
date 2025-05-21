@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordenar Frases</title>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 2px;
+      font-family: Arial, sans-serif;
+    }
+    /* Depósito: Área de posicionamiento libre ampliada (600px de alto) */
+    .deposito {
+      position: relative;
+      width: 100%;
+      height: 300px; /* Aumentado 50% */
+      padding: 10px;
+      border: 2px dashed #999;
+      width: 1170px; /* Ajusta según necesites */
+    height: 360px; /* Ajusta según necesites */
+      background-color: #fff;
+      margin-bottom: 50px;
+      overflow: visible;
+    }
+    /* Caja de frase: estilo inicial con tamaño de letra reducido */
+    .phrase {
+      position: absolute;
+      padding: 1px;
+      background-color: lightblue;
+      border: 1px solid #000;
+      cursor: grab;
+      user-select: none;
+      width: 120px;
+      min-height: 40px;
+      box-sizing: border-box;
+      font-size: 9px; /* Tamaño de letra reducido */
+      background-color: #fff;
+    border-radius: 10px;
+    padding: 3px;
+    margin: 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      line-height: 1.5;
+    }
+    /* Grilla de ordenación */
+    .grid {
+      display: flex;
+      gap: 1px;
+      margin-bottom: 90px;
+    }
+    .column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .column h3 {
+      margin: 0 0 1px 0;
+    }
+    .slot {
+      width: 130px;
+      height: 100px;
+      border: 2px solid #ccc;
+      margin: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f9f9f9;
+      font-size: 8px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>(1) Leer cada frase, luego de manera opcional moverlas dentro del recuadro punteado. (2) Posteriormente llevarlas a la grilla, en función del grado de acuerdo (+) y desacuerdo (-). [Para mejorar la visualización presiona "F11", la misma tecla devuelve la visión anterior]</h2>
+    <div class="deposito" id="deposito">
+      <!-- Las 32 frases se crearán dinámicamente -->
+    </div>
+
+    <h2>Grilla de Ordenación</h2>
+    <div class="grid" id="grid">
+      <!-- Se genera la grilla a partir de la estructura -->
+    </div>
+    
+    <button onclick="generarEnlace()">Generar Enlace: (Sólo si están todas las frases clasificadas en la grilla)</button>
+    <input type="text" id="link" readonly style="width: 80%; margin-top: 5px;">
+    <button id="copiarBtn" onclick="copiarEnlace()" style="display: none; margin-top: 5px;">Copiar enlace</button>
+  </div>
+
+  <script>
+    // Array con las 32 frases
+    const frases = ["La confianza entre los productores y sus asesores o extensionistas es clave para obtener buenos resultados.",
+"Para innovar, es necesario debatir y pensar junto con personas que tengan distintas ideas y puntos de vista sobre el asunto.",
+"Los productores no son realmente innovadores, el sector agropecuario es conservador.",
+"Una producción controlada con agroquímicos garantiza la inocuidad y el abastecimiento de los alimentos.",
+"Los investigadores tienen el rol de generar tecnologías y conocimientos para innovar.",
+"Los extensionistas o asesores son responsables de transferir tecnologías y de persuadir a los productores para que las adopten.",
+"El gobierno no debe meterse con los productores, qué producir y cómo es decisión del productor.",
+"Hay que estar a la vanguardia de las últimas tecnologías.",
+"Los productores en general son bastante reacios a innovar.",
+"Innovar es usar tecnología de punta como drones o agricultura de precisión.",
+"Pensar siempre en aumentar las ganancias nos está llevando a la destrucción de los ecosistemas.",
+"El gobierno debe apoyar producciones estratégicas para fomentar el desarrollo nacional.",
+"Muchas veces los productores adecuan y ajustan las tecnologías disponibles para que les resulten útiles a su situación.",
+"Aprender a partir de la experiencia es fundamental, no sirven las reuniones que son como clases.",
+"A los productores les gusta ver y probar cómo funcionan las cosas antes de ponerlas en práctica.",
+"Los productores son los responsables de traccionar y demandar a asesores o extensionistas para que respondan a sus necesidades.",
+"Las tecnologías ya están disponibles, los asesores y extensionistas tienen que enseñarlas a los productores.",
+"Los productores para innovar necesitan recibir las tecnologías generadas por especialistas y empresas.",
+"Los investigadores hacen aportes descontextualizados, poco útiles para los productores.",
+"Los agroquímicos deben usarse con mucho cuidado: son tóxicos pero también son necesarios para conseguir una buena producción.",
+"El rol de los extensionistas o asesores es acompañar el proceso de toma de decisiones de los productores.",
+"Las mejores soluciones las encontramos discutiendo y trabajando con personas que tengan conocimientos y experiencias valiosas.",
+"Los investigadores facilitan el trabajo del productor creando soluciones tecnológicas confiables.",
+"Los productores son creativos y prueban constantemente nuevas estrategias y formas de trabajar y producir.",
+"Para un buen asesor o extensionista, los conocimientos y experiencias de los productores son fundamentales.",
+"Un buen vínculo entre productores y asesores o extensionistas, es más importante que la excelencia de las recomendaciones técnicas.",
+"La innovación es el resultado de la transferencia de tecnología de expertos a productores.",
+"La labor de los asesores y extensionistas debe partir de lo que le piden los productores.",
+"Los investigadores tienen una mirada poco realista sobre cómo se produce.",
+"Hay que usar herbicidas porque intentar ahorrar en los controles de malezas puede salir muy caro.",
+"Tenemos que adoptar modelos que sean altamente productivos pero que a la vez sean amigables con la naturaleza.",
+"Hay que imitar a la naturaleza, no se puede pretender máximos rindes en el corto plazo y cuidar el suelo al mismo tiempo."
+    ];
+
+    // Estructura de la grilla: números y cantidad de slots (total 32)
+    const estructura = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
+    const espacios = [2, 3, 4, 4, 6, 4, 4, 3, 2];
+
+    const deposito = document.getElementById("deposito");
+    const grid = document.getElementById("grid");
+
+    // Función que crea un elemento de frase con posición inicial (en depósito)
+    function crearFraseElement(text, left, top) {
+      const div = document.createElement("div");
+      div.classList.add("phrase");
+      div.textContent = text;
+      div.style.left = left + "px";
+      div.style.top = top + "px";
+      // Asociar el evento para iniciar el arrastre (desde depósito o grilla)
+      div.addEventListener("mousedown", iniciarArrastre);
+      return div;
+    }
+
+    // Distribuir las 32 frases en el depósito en un "mini-grid" inicial
+    const gapX = 10, gapY = 40, phraseWidth = 130, phraseHeight = 50;
+    frases.forEach((frase, index) => {
+      const col = index % 8;
+      const row = Math.floor(index / 8);
+      const left = 10 + col * (phraseWidth + gapX);
+      const top = 10 + row * (phraseHeight + gapY);
+      const fraseElem = crearFraseElement(frase, left, top);
+      deposito.appendChild(fraseElem);
+    });
+
+    // Generar la grilla de ordenación según la estructura
+    estructura.forEach((nombre, index) => {
+      const column = document.createElement("div");
+      column.classList.add("column");
+      const label = document.createElement("h3");
+      label.textContent = nombre;
+      column.appendChild(label);
+      for (let i = 0; i < espacios[index]; i++) {
+        const slot = document.createElement("div");
+        slot.classList.add("slot");
+        column.appendChild(slot);
+      }
+      grid.appendChild(column);
+    });
+
+    // Variables para controlar el arrastre
+    let offsetX, offsetY, currentDragged = null, originalParent, originalPos = { left: 0, top: 0 };
+    // Umbral de distancia para aplicar el efecto imán (en píxeles)
+    const snapThreshold = 100;
+
+    function iniciarArrastre(event) {
+      currentDragged = event.currentTarget;
+      originalParent = currentDragged.parentElement;
+      originalPos.left = currentDragged.getBoundingClientRect().left;
+      originalPos.top = currentDragged.getBoundingClientRect().top;
+      // Usamos event.offsetX/Y para obtener el punto exacto de clic
+      offsetX = event.offsetX;
+      offsetY = event.offsetY;
+      // Reparentear a document.body para mover libremente por toda la ventana
+      currentDragged.style.position = "absolute";
+      currentDragged.style.left = originalPos.left + "px";
+      currentDragged.style.top = originalPos.top + "px";
+      document.body.appendChild(currentDragged);
+      currentDragged.style.zIndex = 1000;
+      document.addEventListener("mousemove", moverElemento);
+      document.addEventListener("mouseup", finalizarArrastre);
+    }
+
+    function moverElemento(event) {
+      if (!currentDragged) return;
+      const nuevaIzquierda = event.pageX - offsetX;
+      const nuevaArriba = event.pageY - offsetY;
+      currentDragged.style.left = nuevaIzquierda + "px";
+      currentDragged.style.top = nuevaArriba + "px";
+    }
+
+    function finalizarArrastre(event) {
+      if (!currentDragged) return;
+      document.removeEventListener("mousemove", moverElemento);
+      document.removeEventListener("mouseup", finalizarArrastre);
+      currentDragged.style.zIndex = "";
+      
+      const fraseRect = currentDragged.getBoundingClientRect();
+      const fraseCenter = {
+        x: fraseRect.left + fraseRect.width / 2,
+        y: fraseRect.top + fraseRect.height / 2
+      };
+
+      const slots = document.querySelectorAll(".slot");
+      let snapSlot = null;
+      let minDistance = Infinity;
+
+      // Buscar el slot vacío más cercano al centro de la frase
+      slots.forEach(slot => {
+        if (slot.childNodes.length === 0) {
+          const slotRect = slot.getBoundingClientRect();
+          const slotCenter = {
+            x: slotRect.left + slotRect.width / 2,
+            y: slotRect.top + slotRect.height / 2
+          };
+          const dx = slotCenter.x - fraseCenter.x;
+          const dy = slotCenter.y - fraseCenter.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < minDistance) {
+            minDistance = distance;
+            snapSlot = slot;
+          }
+        }
+      });
+
+      // Si la distancia mínima es menor al umbral, se produce el "snap"
+      if (snapSlot && minDistance <= snapThreshold) {
+        currentDragged.style.position = "static";
+        currentDragged.style.left = "";
+        currentDragged.style.top = "";
+        snapSlot.appendChild(currentDragged);
+      } else {
+        // Si no se acerca lo suficiente a un slot, reinsertarla en el depósito
+        const depRect = deposito.getBoundingClientRect();
+        const finalLeft = event.pageX - offsetX - depRect.left;
+        const finalTop = event.pageY - offsetY - depRect.top;
+        currentDragged.style.position = "absolute";
+        currentDragged.style.left = finalLeft + "px";
+        currentDragged.style.top = finalTop + "px";
+        deposito.appendChild(currentDragged);
+      }
+      currentDragged = null;
+    }
+
+  function generarEnlace() {
+  const slots = document.querySelectorAll(".slot");
+  const posiciones = [];
+  let frasesCompletas = true;
+
+  slots.forEach(slot => {
+    if (slot.firstChild) {
+      posiciones.push(slot.firstChild.textContent);
+    } else {
+      frasesCompletas = false;
+    }
+  });
+
+  if (!frasesCompletas) {
+    alert("Por favor, clasificá las 32 frases en la grilla antes de generar el enlace.");
+    return;
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("orden", encodeURIComponent(JSON.stringify(posiciones)));
+  document.getElementById("link").value = url.href;
+
+  // Mostrar botón de copiar
+  document.getElementById("copiarBtn").style.display = "inline-block";
+}
+function copiarEnlace() {
+  const input = document.getElementById("link");
+  input.select();
+  input.setSelectionRange(0, 99999); // Para dispositivos móviles
+  document.execCommand("copy");
+
+  // Cambiar texto del botón como confirmación
+  const btn = document.getElementById("copiarBtn");
+  const originalText = btn.textContent;
+  btn.textContent = "¡Copiado!";
+  setTimeout(() => {
+    btn.textContent = originalText;
+  }, 1500);
+}
+    // Al cargar, si hay parámetro "orden", reubicar las frases en la grilla
+    window.onload = function() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("orden")) {
+        const posiciones = JSON.parse(decodeURIComponent(params.get("orden")));
+        const slots = document.querySelectorAll(".slot");
+        posiciones.forEach((texto, index) => {
+          if (texto && slots[index]) {
+            const existente = Array.from(deposito.children).find(el => el.textContent === texto);
+            if (existente) {
+              existente.style.position = "static";
+              existente.style.left = "";
+              existente.style.top = "";
+              slots[index].appendChild(existente);
+            } else {
+              let phraseDiv = document.createElement("div");
+              phraseDiv.className = "phrase";
+              phraseDiv.textContent = texto;
+              phraseDiv.style.position = "static";
+              slots[index].appendChild(phraseDiv);
+            }
+          }
+        });
+      }
+    }; 
+  </script>
+</body>
+</html>
