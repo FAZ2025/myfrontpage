@@ -286,6 +286,26 @@
       setTimeout(() => {
         btn.textContent = originalText;
       }, 1500);
+     window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("orden")) {
+        const posiciones = JSON.parse(decodeURIComponent(params.get("orden")));
+        const slots = document.querySelectorAll(".slot");
+        posiciones.forEach((texto, index) => {
+          if (texto && slots[index]) {
+            const existente = Array.from(deposito.children).find(el => el.textContent === texto);
+            if (existente) {
+              existente.style.position = "static";
+              existente.style.left = "";
+              existente.style.top = "";
+              slots[index].appendChild(existente);
+            } else {
+              const phraseDiv = document.createElement("div");
+              phraseDiv.className = "phrase";
+              phraseDiv.textContent = texto;
+              phraseDiv.style.position = "static";
+              slots[index].appendChild(phraseDiv);
+            }
     }
   </script>
 </body>
