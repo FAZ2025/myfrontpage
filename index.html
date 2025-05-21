@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ordenar Frases</title>
   <style>
- html, body {
+    html, body {
       height: 100vh;
       overflow: hidden;
       margin: 0;
@@ -16,7 +16,7 @@
       position: fixed;
       inset: 0;
     }
-     .container {
+    .container {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -80,53 +80,54 @@
 </head>
 <body>
   <div class="container">
-    <h2>(1) Leer cada frase, luego de manera opcional moverlas dentro del recuadro punteado. (2) Posteriormente llevarlas a la grilla, en función del grado de acuerdo (+) y desacuerdo (-). [Para mejorar la visualización presiona "F11", la misma tecla devuelve la visión anterior]</h2>
+    <h2>(1) Leer cada frase, luego de manera opcional moverlas dentro del recuadro punteado. (2) Posteriormente llevarlas a la grilla, en función del grado de acuerdo (+) y desacuerdo (-).</h2>
     <div class="deposito" id="deposito"></div>
     <h2>Grilla de Ordenación</h2>
     <div class="grid" id="grid"></div>
-    <button onclick="generarEnlace()">Generar Enlace</button>
-    <input type="text" id="link" readonly style="width: 80%; margin-top: 5px;">
-    <button id="copiarBtn" onclick="copiarEnlace()" style="display: none; margin-top: 5px;">Copiar enlace</button>
   </div>
+
   <script>
-    const frases = ["La confianza entre los productores y sus asesores o extensionistas es clave para obtener buenos resultados.",
-"Para innovar, es necesario debatir y pensar junto con personas que tengan distintas ideas y puntos de vista sobre el asunto.",
-"Los productores no son realmente innovadores, el sector agropecuario es conservador.",
-"Una producción controlada con agroquímicos garantiza la inocuidad y el abastecimiento de los alimentos.",
-"Los investigadores tienen el rol de generar tecnologías y conocimientos para innovar.",
-"Los extensionistas o asesores son responsables de transferir tecnologías y de persuadir a los productores para que las adopten.",
-"El gobierno no debe meterse con los productores, qué producir y cómo es decisión del productor.",
-"Hay que estar a la vanguardia de las últimas tecnologías.",
-"Los productores en general son bastante reacios a innovar.",
-"Innovar es usar tecnología de punta como drones o agricultura de precisión.",
-"Pensar siempre en aumentar las ganancias nos está llevando a la destrucción de los ecosistemas.",
-"El gobierno debe apoyar producciones estratégicas para fomentar el desarrollo nacional.",
-"Muchas veces los productores adecuan y ajustan las tecnologías disponibles para que les resulten útiles a su situación.",
-"Aprender a partir de la experiencia es fundamental, no sirven las reuniones que son como clases.",
-"A los productores les gusta ver y probar cómo funcionan las cosas antes de ponerlas en práctica.",
-"Los productores son los responsables de traccionar y demandar a asesores o extensionistas para que respondan a sus necesidades.",
-"Las tecnologías ya están disponibles, los asesores y extensionistas tienen que enseñarlas a los productores.",
-"Los productores para innovar necesitan recibir las tecnologías generadas por especialistas y empresas.",
-"Los investigadores hacen aportes descontextualizados, poco útiles para los productores.",
-"Los agroquímicos deben usarse con mucho cuidado: son tóxicos pero también son necesarios para conseguir una buena producción.",
-"El rol de los extensionistas o asesores es acompañar el proceso de toma de decisiones de los productores.",
-"Las mejores soluciones las encontramos discutiendo y trabajando con personas que tengan conocimientos y experiencias valiosas.",
-"Los investigadores facilitan el trabajo del productor creando soluciones tecnológicas confiables.",
-"Los productores son creativos y prueban constantemente nuevas estrategias y formas de trabajar y producir.",
-"Para un buen asesor o extensionista, los conocimientos y experiencias de los productores son fundamentales.",
-"Un buen vínculo entre productores y asesores o extensionistas, es más importante que la excelencia de las recomendaciones técnicas.",
-"La innovación es el resultado de la transferencia de tecnología de expertos a productores.",
-"La labor de los asesores y extensionistas debe partir de lo que le piden los productores.",
-"Los investigadores tienen una mirada poco realista sobre cómo se produce.",
-"Hay que usar herbicidas porque intentar ahorrar en los controles de malezas puede salir muy caro.",
-"Tenemos que adoptar modelos que sean altamente productivos pero que a la vez sean amigables con la naturaleza.",
-"Hay que imitar a la naturaleza, no se puede pretender máximos rindes en el corto plazo y cuidar el suelo al mismo tiempo."]; // mismo array de frases
+    const frases = [
+      "La confianza entre los productores y sus asesores o extensionistas es clave para obtener buenos resultados.",
+      "Para innovar, es necesario debatir y pensar junto con personas que tengan distintas ideas y puntos de vista sobre el asunto.",
+      "Los productores no son realmente innovadores, el sector agropecuario es conservador.",
+      "Una producción controlada con agroquímicos garantiza la inocuidad y el abastecimiento de los alimentos.",
+      "Los investigadores tienen el rol de generar tecnologías y conocimientos para innovar.",
+      "Los extensionistas o asesores son responsables de transferir tecnologías y de persuadir a los productores para que las adopten.",
+      "El gobierno no debe meterse con los productores, qué producir y cómo es decisión del productor.",
+      "Hay que estar a la vanguardia de las últimas tecnologías.",
+      "Los productores en general son bastante reacios a innovar.",
+      "Innovar es usar tecnología de punta como drones o agricultura de precisión.",
+      "Pensar siempre en aumentar las ganancias nos está llevando a la destrucción de los ecosistemas.",
+      "El gobierno debe apoyar producciones estratégicas para fomentar el desarrollo nacional.",
+      "Muchas veces los productores adecuan y ajustan las tecnologías disponibles para que les resulten útiles a su situación.",
+      "Aprender a partir de la experiencia es fundamental, no sirven las reuniones que son como clases.",
+      "A los productores les gusta ver y probar cómo funcionan las cosas antes de ponerlas en práctica.",
+      "Los productores son los responsables de traccionar y demandar a asesores o extensionistas para que respondan a sus necesidades.",
+      "Las tecnologías ya están disponibles, los asesores y extensionistas tienen que enseñarlas a los productores.",
+      "Los productores para innovar necesitan recibir las tecnologías generadas por especialistas y empresas.",
+      "Los investigadores hacen aportes descontextualizados, poco útiles para los productores.",
+      "Los agroquímicos deben usarse con mucho cuidado: son tóxicos pero también son necesarios para conseguir una buena producción.",
+      "El rol de los extensionistas o asesores es acompañar el proceso de toma de decisiones de los productores.",
+      "Las mejores soluciones las encontramos discutiendo y trabajando con personas que tengan conocimientos y experiencias valiosas.",
+      "Los investigadores facilitan el trabajo del productor creando soluciones tecnológicas confiables.",
+      "Los productores son creativos y prueban constantemente nuevas estrategias y formas de trabajar y producir.",
+      "Para un buen asesor o extensionista, los conocimientos y experiencias de los productores son fundamentales.",
+      "Un buen vínculo entre productores y asesores o extensionistas, es más importante que la excelencia de las recomendaciones técnicas.",
+      "La innovación es el resultado de la transferencia de tecnología de expertos a productores.",
+      "La labor de los asesores y extensionistas debe partir de lo que le piden los productores.",
+      "Los investigadores tienen una mirada poco realista sobre cómo se produce.",
+      "Hay que usar herbicidas porque intentar ahorrar en los controles de malezas puede salir muy caro.",
+      "Tenemos que adoptar modelos que sean altamente productivos pero que a la vez sean amigables con la naturaleza.",
+      "Hay que imitar a la naturaleza, no se puede pretender máximos rindes en el corto plazo y cuidar el suelo al mismo tiempo."
+    ];
+
     const estructura = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
     const espacios = [2, 3, 4, 4, 6, 4, 4, 3, 2];
     const deposito = document.getElementById("deposito");
     const grid = document.getElementById("grid");
 
-        const gapX = 10, gapY = 40, phraseWidth = 130, phraseHeight = 50;
+    const gapX = 10, gapY = 40, phraseWidth = 130, phraseHeight = 50;
     frases.forEach((frase, index) => {
       const col = index % 8;
       const row = Math.floor(index / 8);
@@ -244,6 +245,7 @@
           deposito.appendChild(currentDragged);
         }
       }
+
       currentDragged = null;
     }
   </script>
