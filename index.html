@@ -74,7 +74,15 @@
 </head>
 <body>
   <div class="container">
-    <h2>(1) Leer cada frase, luego de manera opcional moverlas dentro del recuadro punteado. (2) Posteriormente llevarlas a la grilla, en función del grado de acuerdo (+) y desacuerdo (-). [Para mejorar la visualización presiona "F11", la misma tecla devuelve la visión anterior]</h2>
+    <h2>
+(1) Leé cada frase.<br>
+(2) Usá el <strong>clic izquierdo</strong> para arrastrarlas desde el recuadro punteado (reservorio) hacia la grilla.<br>
+(3) Podés moverlas libremente entre el reservorio y la grilla.<br>
+(4) Usá la <strong>rueda del mouse</strong> para desplazarte si es necesario (incluso al mismo tiempo que se selecciona la tarjeta).<br>
+(5) Clasificá las frases según tu nivel de acuerdo (+) o desacuerdo (−).<br>
+(6) Asegurate de que la clasificación final refleje lo más fiel posible tu opinión. Podés mover las tarjetas <strong>tantas veces como sea necesario</strong> antes de finalizar.<br>
+<span style="font-weight: normal;">[Sugerencia: presioná "F11" para usar pantalla completa. Volvés a la vista normal con la misma tecla.]</span>
+</h2>
     <div class="deposito" id="deposito">
       <!-- Las 32 frases se crearán dinámicamente -->
     </div>
@@ -202,57 +210,57 @@
     }
 
     function finalizarArrastre(event) {
-      if (!currentDragged) return;
-      document.removeEventListener("mousemove", moverElemento);
-      document.removeEventListener("mouseup", finalizarArrastre);
-      currentDragged.style.zIndex = "";
-      
-      const fraseRect = currentDragged.getBoundingClientRect();
-      const fraseCenter = {
-        x: fraseRect.left + fraseRect.width / 2,
-        y: fraseRect.top + fraseRect.height / 2
+  if (!currentDragged) return;
+  document.removeEventListener("mousemove", moverElemento);
+  document.removeEventListener("mouseup", finalizarArrastre);
+  currentDragged.style.zIndex = "";
+  
+  const fraseRect = currentDragged.getBoundingClientRect();
+  const fraseCenter = {
+    x: fraseRect.left + fraseRect.width / 2,
+    y: fraseRect.top + fraseRect.height / 2
+  };
+
+  const slots = document.querySelectorAll(".slot");
+  let snapSlot = null;
+  let minDistance = Infinity;
+
+  // Buscar el slot vacío más cercano al centro de la frase
+  slots.forEach(slot => {
+    if (slot.childNodes.length === 0) {
+      const slotRect = slot.getBoundingClientRect();
+      const slotCenter = {
+        x: slotRect.left + slotRect.width / 2,
+        y: slotRect.top + slotRect.height / 2
       };
-
-      const slots = document.querySelectorAll(".slot");
-      let snapSlot = null;
-      let minDistance = Infinity;
-
-      // Buscar el slot vacío más cercano al centro de la frase
-      slots.forEach(slot => {
-        if (slot.childNodes.length === 0) {
-          const slotRect = slot.getBoundingClientRect();
-          const slotCenter = {
-            x: slotRect.left + slotRect.width / 2,
-            y: slotRect.top + slotRect.height / 2
-          };
-          const dx = slotCenter.x - fraseCenter.x;
-          const dy = slotCenter.y - fraseCenter.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < minDistance) {
-            minDistance = distance;
-            snapSlot = slot;
-          }
-        }
-      });
-
-      // Si la distancia mínima es menor al umbral, se produce el "snap"
-      if (snapSlot && minDistance <= snapThreshold) {
-        currentDragged.style.position = "static";
-        currentDragged.style.left = "";
-        currentDragged.style.top = "";
-        snapSlot.appendChild(currentDragged);
-      } else {
-        // Si no se acerca lo suficiente a un slot, reinsertarla en el depósito
-        const depRect = deposito.getBoundingClientRect();
-        const finalLeft = event.pageX - offsetX - depRect.left;
-        const finalTop = event.pageY - offsetY - depRect.top;
-        currentDragged.style.position = "absolute";
-        currentDragged.style.left = finalLeft + "px";
-        currentDragged.style.top = finalTop + "px";
-        deposito.appendChild(currentDragged);
+      const dx = slotCenter.x - fraseCenter.x;
+      const dy = slotCenter.y - fraseCenter.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < minDistance) {
+        minDistance = distance;
+        snapSlot = slot;
       }
-      currentDragged = null;
     }
+  });
+
+  // Si la distancia mínima es menor al umbral, se produce el "snap"
+  if (snapSlot && minDistance <= snapThreshold) {
+    currentDragged.style.position = "static";
+    currentDragged.style.left = "";
+    currentDragged.style.top = "";
+    snapSlot.appendChild(currentDragged);
+  } else {
+    // Si no se acerca lo suficiente a un slot, reinsertarla en el depósito
+    const depRect = deposito.getBoundingClientRect();
+    const finalLeft = event.pageX - offsetX - depRect.left;
+    const finalTop = event.pageY - offsetY - depRect.top;
+    currentDragged.style.position = "absolute";
+    currentDragged.style.left = finalLeft + "px";
+    currentDragged.style.top = finalTop + "px";
+    deposito.appendChild(currentDragged);
+  }
+  currentDragged = null;
+}
 
   function generarEnlace() {
   const slots = document.querySelectorAll(".slot");
